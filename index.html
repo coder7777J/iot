@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div class="a1">
+    <pre>  
+        <h1>1. Write an application to detect obstacle and notify user using LEDs.</h1>
+        import RPi.GPIO as GPIO
+        import time
+        GPIO.setwarnings(False)
+        GPIO.setmode(GPIO.BOARD)
+        GPIO.setup(7,GPIO.OUT)
+        GPIO.setup(40,GPIO.IN)
+        while True:
+            i=GPIO.input(40)
+            if(i==0):
+                print("Object Detected....")
+                GPIO.output(7,True)
+            else:
+                print("Object is NOT Detected....")
+                GPIO.output(7,Flase)
+    </pre>
+</div>  
+<div class="a2">
+    <pre>  
+        <h1>2. Write an application to read the environment temperature and humidity. If 
+             temperature and humidity crosses a threshold value. notify user using LEDs</h2>
+             """ 
+             Before running the python script perform the following steps:
+             git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+             cd Adafruit_Python_DHT
+             sudo apt-get update
+             sudo apt-get install build-essential python-dev
+             sudo python setup.py install 
+             
+             """
+             import Adafruit_DHT as DHT
+             import RPi.GPIO as GPIO
+             import time
+             GPIO.setwarnings(False)
+             GPIO.setmode(GPIO.BCM)
+             GPIO.setup(21,GPIO.OUT) #led for temp
+             GPIO.setup(27,GPIO.OUT)  # led for hum
+             while True:
+                 humidity,temp=DHT.readRetry(11,17)
+                 if(temp>25):
+                     print("Temperature is greater than 25.")
+                     GPIO.output(21,True) # Note: pin 21 is GPIO number
+                 else:
+                     print("Temperature is less than 25.")
+                     GPIO.output(21,False) # Note: pin 21 is GPIO number
+                 
+                 if(humidity>60):
+                     print("humidity is greater than 60.")
+                     GPIO.output(27,True) # Note: pin 21 is GPIO number
+                 else:
+                     print("humidity is greater than 25.")
+                     GPIO.output(27,False) # Note: pin 21 is GPIO number
+    </pre>
+</div> 
+<div class="a2">
+    <pre>  
+        <h1> 3. Create an application to write temperature and humidity data to the cloud and read 
+            that from the cloud. </h2>
+
+            Run Python code temp.py Before running the python script perform the following steps:
+            git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+            cd Adafruit_Python_DHT
+            sudo apt-get update sudo apt-get install build-essential python-dev
+            sudo python setup.py install 
+            # Write data to the cloud
+            #!/usr/bin/python
+            
+            import RPi.GPIO as GPIO
+            import time
+            import http.client as httplib, urllib
+            import Adafruit_DHT
+            from urllib.request import urlopen
+            import json
+            sleep = 2 # how many seconds to sleep between posts to the channel
+            key = 'GNRSGS61ZETE14L3' # Thingspeak channel to update
+            timer=time.time()
+            while True:
+                humidity, temperature = Adafruit_DHT.read_retry(11,21)
+                print(temperature, humidity)
+                params = urllib.urlencode({'field1':temperature,'field2':humidity,'key':key})
+                headers = {"Content-typZZe": "application/x-www-form-urlencoded","Accept":"text/plain"}
+                conn = httplib.HTTPConnection("api.thingspeak.com:80")
+                try:
+                    conn.request("POST","/update", params, headers)
+                    response = conn.getresponse()
+                    print(response.status, response.reason)
+                    data = response.read()
+                    conn.close()
+                except:
+                    print("connection failed")
+
+             # Read data From cloud
+            TS=urllib.request.urlopen()
+            json_object=json.load(TS)
+            entries=json_object["feeds"]
+            for i in entries:
+                print(str(i["entery_id"])+" "+i["created_at"]+" "+i["field1"]+i["field2"])
+            TS.close()
+    </pre>
+</div>   
+<div class="a2">
+    <pre>  
+        <h1>4. Write an application to capture image as well as video of 3 seconds if any obstacle is 
+            detected, if not print message no obstacle detected</h2>
+            Note: sudo raspistill -o image // to check camera
+            # Enable the camera
+            # Run command sudo raspi-config on terminal and choose in the menu to enable the pi 
+                camera. A
+            # reboot is needed after this.
+            # sudo apt-get update
+            # sudo apt-get install python-picamera
+            """
+            import picamera
+            import RPi.GPIO as GPIO
+            import time
+            GPIO.setwarnings(False)
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(7,GPIO.OUT)
+            GPIO.setup(40,GPIO.IN)
+            camera=picamera.PiCamera()
+            while True:
+                i=GPIO.input(40)
+                if(i==0):
+                    print("Object Detected....")
+                    camera.capture('img.jpg')
+                    camera.start_recording('video.h264')
+                    sleep(3)
+                    print("Image captured and video recorded...")
+                    camera.stop_recording()
+            
+                else:
+                    print("Object is NOT Detected....")
+    </pre>
+</div> 
+</body>
+<style>
+    body{
+        position: absolute;
+        text-align: left;
+        padding: auto;
+        
+    }
+    .a1,.a2{
+        position: relative;
+       
+        background-color: azure;
+        border-radius: 30px;
+
+       
+    }
+</style>
+</html>
